@@ -7,10 +7,10 @@ async function getData() {
   let res = await fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json`);
   let data = await res.json();
 
-  let aqi = parseFloat(data.field1);
-  let pm = data.field2;
-  let temp = data.field4;
-  let hum = data.field5;
+  let aqi = parseFloat(data.field1) || 0;
+let pm = data.field2 || "--";
+let temp = data.field4 || "--";
+let hum = data.field5 || "--";
 
   document.getElementById("aqiValue").innerText = aqi;
   document.getElementById("pm").innerText = pm;
