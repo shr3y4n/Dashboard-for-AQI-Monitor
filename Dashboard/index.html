@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQI Smart Dashboard</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- App Icon -->
+  <link rel="icon" href="icon.png" type="image/png">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- iOS Support -->
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dark">
+
+<header>
+  <h1>🌍 AQI Monitor</h1>
+
+  <input type="text" id="search" placeholder="Search city..." />
+
+  <button onclick="toggleTheme()">🌗</button>
+</header>
+
+<div class="container">
+
+  <!-- AQI GAUGE -->
+  <div class="card big">
+    <div class="circle">
+      <span id="aqiValue">--</span>
+    </div>
+    <p id="status">--</p>
+  </div>
+
+  <!-- DATA CARDS -->
+  <div class="card">
+    <h3>PM2.5</h3>
+    <p id="pm">--</p>
+  </div>
+
+  <div class="card">
+    <h3>Temperature</h3>
+    <p id="temp">--</p>
+  </div>
+
+  <div class="card">
+    <h3>Humidity</h3>
+    <p id="hum">--</p>
+  </div>
+
+  <div class="card">
+    <h3>Weather</h3>
+    <p id="weather">--</p>
+  </div>
+
+  <!-- AI -->
+  <div class="card full">
+    <h3>AI Advice</h3>
+    <p id="ai">Loading...</p>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
