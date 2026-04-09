@@ -1,95 +1,142 @@
+// ================= CONFIG =================
 const channelID = "3331394";
 const WEATHER_KEY = "e35d0f72723218b32dbe1eaff10c142e";
 const GEMINI_KEY = "AIzaSyD5Zi5MRNF36Drz9WWsXsWC1weykGKTOGg";
 
-// ================= AQI DATA =================
+// ================= FETCH SENSOR DATA =================
 async function getData() {
-  let res = await fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json`);
-  let data = await res.json();
+  try {
+    let res = await fetch(`https://api.thingspeak.com/channels/${channelID}/feeds.json?results=2`);
+    let data = await res.json();
 
-  console.log("DATA:", data); // debug
+    console.log("ThingSpeak:", data);
 
-  let aqi = Number(data.field1);
-  let pm = Number(data.field2);
-  let temp = Number(data.field4);
-  let hum = Number(data.field5);
+    let last = data.feeds[data.feeds.length - 1];
 
-  // UI update
-  document.getElementById("aqiValue").innerText = aqi;
-  document.getElementById("pm").innerText = pm;
-  document.getElementById("temp").innerText = temp + "°C";
-  document.getElementById("hum").innerText = hum + "%";
+    let aqi = last.field1 ? parseFloat(last.field1) : 0;
+    let pm = last.field2 ? parseFloat(last.field2) : 0;
+    let temp = last.field4 ? parseFloat(last.field4) : 0;
+    let hum = last.field5 ? parseFloat(last.field5) : 0;
 
-  let status = "GOOD";
-  if (aqi > 100) status = "UNHEALTHY";
-  else if (aqi > 50) status = "MODERATE";
+    // UI UPDATE
+    document.getElementById("aqiValue").innerText = aqi;
+    document.getElementById("pm").innerText = pm;
+    document.getElementById("temp").innerText = temp + "°C";
+    document.getElementById("hum").innerText = hum + "%";
 
-  document.getElementById("status").innerText = status;
+    // AQI STATUS + COLOR
+    let status = "GOOD";
+    let color = "cyan";
+
+    if (aqi > 100) {
+      status = "UNHEALTHY";
+      color = "red";
+    } else if (aqi > 50) {
+      status = "MODERATE";
+      color = "orange";
+    }
+
+    document.getElementById("status").innerText = status;
+
+    // Animate circle color
+    document.querySelector(".circle").style.borderColor = color;
+
+    // AI Advice
+    getAIAdvice(aqi);
+
+  } catch (err) {
+    console.log("Error fetching data:", err);
+  }
 }
-}
 
+// AUTO REFRESH
 setInterval(getData, 5000);
 getData();
 
-// ================= GEMINI =================
-async function getAIAdvice(aqi) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`,
-    {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `AQI is ${aqi}. Give short health advice.`
-          }]
-        }]
-      })
-    }
-  );
 
-  const data = await res.json();
-  document.getElementById("ai").innerText =
-    data.candidates?.[0]?.content?.parts?.[0]?.text || "No advice";
+// ================= GEMINI AI =================
+async function getAIAdvice(aqi) {
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `AQI is ${aqi}. Give short, practical health advice like a smart assistant.`
+            }]
+          }]
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    let advice =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No advice available";
+
+    document.getElementById("ai").innerText = advice;
+
+  } catch (err) {
+    console.log("Gemini error:", err);
+  }
 }
 
-// ================= SEARCH =================
-document.getElementById("search").addEventListener("change", async (e) => {
-  let city = e.target.value;
 
-  // WEATHER
-  let weatherRes = await fetch(
-    `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_KEY}&units=metric`
-  );
+// ================= SEARCH (WEATHER) =================
+document.getElementById("search").addEventListener("keypress", async (e) => {
+  if (e.key === "Enter") {
+    let city = e.target.value;
 
-  let weatherData = await weatherRes.json();
+    try {
+      let res = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_KEY}&units=metric`
+      );
 
-  document.getElementById("weather").innerText =
-    `${weatherData.main.temp}°C, ${weatherData.weather[0].main}`;
+      let data = await res.json();
 
-  // GEMINI AQI + SUMMARY
-  const aiRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`,
-    {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `Give AQI and environmental summary for ${city}`
-          }]
-        }]
-      })
+      if (data.main) {
+        document.getElementById("weather").innerText =
+          `${data.main.temp}°C, ${data.weather[0].main}`;
+      } else {
+        document.getElementById("weather").innerText = "City not found";
+      }
+
+      // OPTIONAL: AI summary for city
+      const aiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Give a short environmental summary for ${city}`
+              }]
+            }]
+          })
+        }
+      );
+
+      const aiData = await aiRes.json();
+
+      let summary =
+        aiData.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "No data";
+
+      document.getElementById("ai").innerText = summary;
+
+    } catch (err) {
+      console.log("Search error:", err);
     }
-  );
-
-  const aiData = await aiRes.json();
-
-  document.getElementById("ai").innerText =
-    aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+  }
 });
 
-// ================= THEME =================
+
+// ================= THEME TOGGLE =================
 function toggleTheme() {
   document.body.classList.toggle("light");
   document.body.classList.toggle("dark");
