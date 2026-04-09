@@ -56,6 +56,14 @@ async function getAIAdvice(aqi) {
   console.log("AI FUNCTION CALLED, AQI =", aqi);
 
   try {
+    let level = "";
+
+    if (aqi <= 50) level = "Good air quality";
+    else if (aqi <= 100) level = "Moderate air quality";
+    else if (aqi <= 150) level = "Unhealthy for sensitive groups";
+    else if (aqi <= 200) level = "Unhealthy air quality";
+    else level = "Hazardous air quality";
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
       {
@@ -66,10 +74,17 @@ async function getAIAdvice(aqi) {
         body: JSON.stringify({
           contents: [
             {
-              role: "user",
               parts: [
                 {
-                  text: `Air Quality Index is ${aqi}. Give ONE short health advice sentence.`
+                  text: `AQI is ${aqi} (${level}). Give specific health advice. 
+                  
+Rules:
+- If AQI is good → say safe activities
+- If moderate → caution
+- If unhealthy → warn user
+- If hazardous → strict warning (mask, stay indoors)
+
+Keep it short (1-2 lines).`
                 }
               ]
             }
@@ -80,15 +95,18 @@ async function getAIAdvice(aqi) {
 
     const data = await response.json();
 
-    console.log("FULL GEMINI RESPONSE:", data);
+    console.log("GEMINI RESPONSE:", data);
 
-    // ✅ SAFE EXTRACTION
     let advice =
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    // ✅ FALLBACK (VERY IMPORTANT)
     if (!advice) {
-      advice = "Air quality is acceptable. Maintain ventilation and stay hydrated.";
+      // fallback based on AQI
+      if (aqi <= 50) advice = "Air quality is good. Safe for outdoor activities.";
+      else if (aqi <= 100) advice = "Moderate air. Sensitive people should be cautious.";
+      else if (aqi <= 150) advice = "Limit outdoor exposure if sensitive.";
+      else if (aqi <= 200) advice = "Unhealthy air. Wear a mask and avoid outdoor activity.";
+      else advice = "Hazardous air! Stay indoors and use air purification.";
     }
 
     document.getElementById("ai").innerText = advice;
@@ -96,39 +114,10 @@ async function getAIAdvice(aqi) {
   } catch (error) {
     console.log("Gemini ERROR:", error);
 
-    // ✅ FAILSAFE TEXT
     document.getElementById("ai").innerText =
-      "Air quality is acceptable. Maintain ventilation and stay hydrated.";
+      "Unable to fetch AI advice.";
   }
 }
-
-// ================= SEARCH (WEATHER) =================
-document.getElementById("search").addEventListener("keypress", async (e) => {
-  if (e.key === "Enter") {
-    let city = e.target.value;
-
-    try {
-      let res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_KEY}&units=metric`
-      );
-
-      let data = await res.json();
-
-      console.log("WEATHER DATA:", data);
-
-      if (data.cod === 200) {
-        document.getElementById("weather").innerText =
-          `${data.main.temp}°C, ${data.weather[0].main}`;
-      } else {
-        document.getElementById("weather").innerText = "City not found";
-      }
-
-    } catch (err) {
-      console.log("Weather error:", err);
-    }
-  }
-});
-
 
 // ================= THEME TOGGLE =================
 function toggleTheme() {
