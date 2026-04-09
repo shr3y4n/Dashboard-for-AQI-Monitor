@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: 'Segoe UI';
-  transition: 0.3s;
+  transition: 0.4s;
 }
 
 .dark {
@@ -14,31 +14,53 @@ body {
   color: black;
 }
 
+/* HEADER */
 header {
   display: flex;
-  justify-content: space-between;
-  padding: 20px;
-}
-
-input {
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-}
-
-.container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  justify-content: center;
+  align-items: center;
   gap: 20px;
   padding: 20px;
 }
 
+/* SEARCH BAR (BIGGER + CENTERED) */
+#search {
+  width: 350px;
+  padding: 12px;
+  border-radius: 25px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+#search:focus {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px cyan;
+}
+
+/* GRID */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  padding: 20px;
+}
+
+/* CARDS */
 .card {
   padding: 20px;
   border-radius: 20px;
   backdrop-filter: blur(15px);
   background: rgba(255,255,255,0.08);
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  box-shadow: 0 0 25px rgba(0,0,0,0.3);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 30px cyan;
 }
 
 .big {
@@ -50,14 +72,47 @@ input {
   grid-column: span 3;
 }
 
+/* AQI CIRCLE */
 .circle {
-  width: 150px;
-  height: 150px;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
   border: 10px solid cyan;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: auto;
-  font-size: 30px;
+  font-size: 32px;
+  animation: glow 2s infinite alternate;
+}
+
+/* GLOW ANIMATION */
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px cyan;
+  }
+  to {
+    box-shadow: 0 0 30px cyan, 0 0 50px cyan;
+  }
+}
+
+/* AI BOX */
+#ai {
+  font-size: 16px;
+  line-height: 1.5;
+  animation: fadeIn 1s ease-in;
+}
+
+/* FADE IN */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* BUTTON */
+button {
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
