@@ -58,30 +58,38 @@ getData();
 async function getAIAdvice(aqi) {
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `AQI is ${aqi}. Give short, practical health advice like a smart assistant.`
-            }]
-          }]
+          contents: [
+            {
+              parts: [
+                {
+                  text: `AQI is ${aqi}. Give one short health advice.`
+                }
+              ]
+            }
+          ]
         })
       }
     );
 
     const data = await res.json();
 
-    let advice =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No advice available";
+    console.log("AI RESPONSE:", data);
 
-    document.getElementById("ai").innerText = advice;
+    let advice = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    document.getElementById("ai").innerText =
+      advice || "No AI response";
 
   } catch (err) {
     console.log("Gemini error:", err);
+    document.getElementById("ai").innerText = "AI error";
   }
 }
 
