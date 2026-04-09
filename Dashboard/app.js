@@ -55,6 +55,7 @@ getData();
 
 
 // ================= GEMINI AI =================
+console.log("AI FUNCTION CALLED, AQI =", aqi);
 async function getAIAdvice(aqi) {
   try {
     const res = await fetch(
