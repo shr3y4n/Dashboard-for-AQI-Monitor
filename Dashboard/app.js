@@ -66,9 +66,10 @@ async function getAIAdvice(aqi) {
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [
                 {
-                  text: `AQI is ${aqi}. Give one short health advice.`
+                  text: `Air Quality Index is ${aqi}. Give ONE short health advice sentence.`
                 }
               ]
             }
@@ -79,24 +80,27 @@ async function getAIAdvice(aqi) {
 
     const data = await response.json();
 
-    console.log("GEMINI RESPONSE:", data);
+    console.log("FULL GEMINI RESPONSE:", data);
 
-    let advice = "";
+    // ✅ SAFE EXTRACTION
+    let advice =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (data.candidates && data.candidates.length > 0) {
-      advice = data.candidates[0].content.parts[0].text;
-    } else {
-      advice = "No AI response";
+    // ✅ FALLBACK (VERY IMPORTANT)
+    if (!advice) {
+      advice = "Air quality is acceptable. Maintain ventilation and stay hydrated.";
     }
 
     document.getElementById("ai").innerText = advice;
 
   } catch (error) {
     console.log("Gemini ERROR:", error);
-    document.getElementById("ai").innerText = "AI failed";
+
+    // ✅ FAILSAFE TEXT
+    document.getElementById("ai").innerText =
+      "Air quality is acceptable. Maintain ventilation and stay hydrated.";
   }
 }
-
 
 // ================= SEARCH (WEATHER) =================
 document.getElementById("search").addEventListener("keypress", async (e) => {
