@@ -1,7 +1,7 @@
 // ================= CONFIG =================
 const channelID = "3331394";
 const WEATHER_KEY = "93d8931bfd04556d9950e0cd87119237";
-const GEMINI_KEY = "AIzaSyD5Zi5MRNF36Drz9WWsXsWC1weykGKTOGg";
+const GEMINI_KEY = "AIzaSyBQcUseZsARkSd05QtnXdmdkZsaqs3YJxU";
 
 // ================= FETCH SENSOR DATA =================
 async function getData() {
